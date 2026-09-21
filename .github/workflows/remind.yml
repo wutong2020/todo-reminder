@@ -1,0 +1,44 @@
+name: Check Reminders
+
+on:
+  schedule:
+    # 每 5 分钟跑一次
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Run reminder check
+        env:
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: python check_reminders.py
+
+      - name: Commit updated todos.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet todos.json; then
+            git add todos.json
+            git commit -m "chore: update reminded flags [skip ci]"
+            git push
+          else
+            echo "没有变化，跳过提交"
+          fi
