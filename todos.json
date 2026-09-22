@@ -426,21 +426,5 @@
     "completed": false,
     "repeat_type": "none",
     "repeat_config": ""
-  },
-  {
-    "id": "20260922201659401909",
-    "task": "最终测试",
-    "event_time": "2026-09-22T20:26",
-    "reminders": [
-      {
-        "time": "2026-09-22T20:19",
-        "reminded": true
-      }
-    ],
-    "meeting_type": "",
-    "meeting_id": "",
-    "completed": false,
-    "repeat_type": "none",
-    "repeat_config": ""
   }
 ]
