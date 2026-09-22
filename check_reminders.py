@@ -10,7 +10,7 @@ import requests
 
 DATA_FILE = Path(__file__).with_name("todos.json")
 TOKEN = os.environ.get("PUSHPLUS_TOKEN", "").strip()
-LOOKBACK_MINUTES = int(os.environ.get("LOOKBACK_MINUTES", "60"))
+LOOKBACK_MINUTES = int(os.environ.get("LOOKBACK_MINUTES", "1440"))
 
 
 def send_pushplus(title, content):
