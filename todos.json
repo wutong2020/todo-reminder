@@ -426,5 +426,21 @@
     "completed": false,
     "repeat_type": "none",
     "repeat_config": ""
+  },
+  {
+    "id": "20260922203351457223",
+    "task": "巡视期间警示教育大会",
+    "event_time": "2026-09-28T14:00",
+    "reminders": [
+      {
+        "time": "2026-09-28T13:50",
+        "reminded": false
+      }
+    ],
+    "meeting_type": "",
+    "meeting_id": "",
+    "completed": false,
+    "repeat_type": "none",
+    "repeat_config": ""
   }
 ]
