@@ -434,7 +434,7 @@
     "reminders": [
       {
         "time": "2026-09-22T09:52",
-        "reminded": false
+        "reminded": true
       }
     ],
     "meeting_type": "",
