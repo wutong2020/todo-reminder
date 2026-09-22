@@ -426,5 +426,21 @@
     "completed": false,
     "repeat_type": "none",
     "repeat_config": ""
+  },
+  {
+    "id": "20260922191830501100",
+    "task": "微信推送测试",
+    "event_time": "2026-09-22T19:23",
+    "reminders": [
+      {
+        "time": "2026-09-22T19:21",
+        "reminded": false
+      }
+    ],
+    "meeting_type": "",
+    "meeting_id": "",
+    "completed": false,
+    "repeat_type": "none",
+    "repeat_config": ""
   }
 ]
