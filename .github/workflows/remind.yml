@@ -2,7 +2,6 @@ name: Check Reminders
 
 on:
   schedule:
-    # 每 5 分钟跑一次
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
@@ -23,12 +22,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install requests
-        run: pip install requests
+      - name: Install deps
+        run: pip install requests cryptography
 
       - name: Run reminder check
         env:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          ENCRYPT_KEY: ${{ secrets.ENCRYPT_KEY }}
         run: python check_reminders.py
 
       - name: Commit updated todos.json
