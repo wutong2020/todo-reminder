@@ -1,26 +1,57 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""GitHub Actions 云端提醒检查脚本（无界面）"""
+"""GitHub Actions 云端提醒检查脚本（无界面，支持加密）"""
+import base64
 import json
 import os
 from datetime import datetime
 from pathlib import Path
 
 import requests
+from cryptography.fernet import Fernet
 
 DATA_FILE = Path(__file__).with_name("todos.json")
-TOKEN = os.environ.get("PUSHPLUS_TOKEN", "").strip()
+PUSHPLUS_TOKEN = os.environ.get("PUSHPLUS_TOKEN", "").strip()
+ENCRYPT_KEY = os.environ.get("ENCRYPT_KEY", "").strip()
 LOOKBACK_MINUTES = int(os.environ.get("LOOKBACK_MINUTES", "1440"))
+
+_fernet = None
+if ENCRYPT_KEY:
+    try:
+        _fernet = Fernet(ENCRYPT_KEY.encode("ascii"))
+    except Exception as e:
+        print(f"ENCRYPT_KEY 无效：{e}")
+
+
+def decode_content(content):
+    content = (content or "").strip()
+    if content.startswith("ENC:"):
+        if not _fernet:
+            raise RuntimeError("内容已加密，但环境缺少 ENCRYPT_KEY")
+        token = content[4:].encode("ascii")
+        text = _fernet.decrypt(token).decode("utf-8")
+        return json.loads(text)
+    if not content:
+        return []
+    return json.loads(content)
+
+
+def encode_content(todos):
+    text = json.dumps(todos, ensure_ascii=False, indent=2)
+    if _fernet:
+        token = _fernet.encrypt(text.encode("utf-8"))
+        return "ENC:" + token.decode("ascii")
+    return text
 
 
 def send_pushplus(title, content):
-    if not TOKEN:
+    if not PUSHPLUS_TOKEN:
         print("缺少 PUSHPLUS_TOKEN 环境变量")
         return False
     try:
         r = requests.post(
             "https://www.pushplus.plus/send",
-            json={"token": TOKEN, "title": title[:100], "content": content[:20000]},
+            json={"token": PUSHPLUS_TOKEN, "title": title[:100], "content": content[:20000]},
             timeout=15,
         )
         res = r.json()
@@ -38,7 +69,13 @@ def main():
         print("todos.json 不存在")
         return
 
-    todos = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    raw = DATA_FILE.read_text(encoding="utf-8")
+    try:
+        todos = decode_content(raw)
+    except Exception as e:
+        print(f"内容解析失败: {e}")
+        return
+
     now = datetime.now()
     changed = False
     sent = 0
@@ -55,7 +92,6 @@ def main():
                 continue
             if dt > now:
                 continue
-            # 过期超过 LOOKBACK_MINUTES 分钟的，直接标记为已处理，不补发
             if (now - dt).total_seconds() > LOOKBACK_MINUTES * 60:
                 r["reminded"] = True
                 changed = True
@@ -77,9 +113,7 @@ def main():
                 sent += 1
 
     if changed:
-        DATA_FILE.write_text(
-            json.dumps(todos, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        DATA_FILE.write_text(encode_content(todos), encoding="utf-8")
         print(f"已发送 {sent} 条，reminded 标记已更新")
     else:
         print("没有需要发送的提醒")
